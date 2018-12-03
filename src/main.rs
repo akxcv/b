@@ -47,22 +47,44 @@ fn main() {
         let out_str = String::from_utf8_lossy(&out.stdout);
 
         if out_str.len() > 0 {
-            let mut c = Command::new(cmd_args[x]);
+            let cmd_string = cmd_args[x..]
+                .iter()
+                .map(|x| String::from(*x))
+                .collect::<Vec<String>>()
+                .join(" ");
+            let mut c = shell::cmd!(&cmd_string).command;
+            // let mut c = Command::new(cmd_args[x]);
             &cmd_args[0..x].iter().for_each(|v| {
                 let s = v.split('=').collect::<Vec<&str>>();
                 c.env(s[0], s[1]);
             });
 
-            c.args(&cmd_args[x+1..])
+            c //.args(&cmd_args[x+1..])
                 .stdin(Stdio::inherit())
                 .stdout(Stdio::inherit());
             let mut c = c.spawn().unwrap();
             c.wait().unwrap();
         } else {
-            println!("{}", cmd);
+            let cmd_string = cmd_args
+                .iter()
+                .map(|x| String::from(*x))
+                .collect::<Vec<String>>()
+                .join(" ");
+            let c = shell::cmd!(&cmd_string).command;
+            let x = format!("{:?}", c);
+            let x = x.split("\" \"").collect::<Vec<&str>>().join(" ");
+            println!("{}", x[1..x.len() - 1].to_string());
         }
     } else {
-        println!("{}", cmd);
+        let cmd_string = cmd_args
+            .iter()
+            .map(|x| String::from(*x))
+            .collect::<Vec<String>>()
+            .join(" ");
+        let c = shell::cmd!(&cmd_string).command;
+        let x = format!("{:?}", c);
+        let x = x.split("\" \"").collect::<Vec<&str>>().join(" ");
+        println!("{}", x[1..x.len() - 1].to_string());
     }
 }
 

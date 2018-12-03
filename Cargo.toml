@@ -9,3 +9,4 @@ dirs = "1.0"
 skim = "0.5.2"
 serde = "*"
 serde_yaml = "*"
+shell = { git = "https://github.com/google/rust-shell" }
