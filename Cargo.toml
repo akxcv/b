@@ -1,0 +1,11 @@
+[package]
+name = "b"
+version = "0.1.0"
+authors = ["Alexander Komarov <ak@akxcv.com>"]
+edition = "2018"
+
+[dependencies]
+dirs = "1.0"
+skim = "0.5.2"
+serde = "*"
+serde_yaml = "*"
