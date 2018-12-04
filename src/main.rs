@@ -25,7 +25,7 @@ fn read_config_file() -> String {
 }
 
 fn run_skim(list: &BookmarkList, options: SkimOptions) {
-    let skim_input = list.to_skim_input();
+    let skim_input = list.to_string();
 
     match Skim::run_with(&options, Some(Box::new(Cursor::new(skim_input))))
         .map(|out| out.selected_items)
@@ -47,18 +47,28 @@ fn main() {
 
     let matches = clap_app!(app =>
         (name: "b")
-        (@arg QUERY: "bookmark name")
+        (@group mode =>
+            (@arg QUERY: "bookmark name")
+            (@arg list: -l --list "list bookmarks")
+            (@arg edit: -e --edit "edit bookmark file")
+        )
     )
     .get_matches();
 
-    match matches.value_of("QUERY") {
-        Some(query) => {
-            if list.has_item(query) {
-                command::run_command(list.get_item(query));
-            } else {
-                run_skim(&list, SkimOptions::default().query(query).ansi(true));
+    if matches.is_present("list") {
+        println!("{}", list.to_string());
+    } else if matches.is_present("edit") {
+        command::run_command("$EDITOR $HOME/.b");
+    } else {
+        match matches.value_of("QUERY") {
+            Some(query) => {
+                if list.has_item(query) {
+                    command::run_command(list.get_item(query));
+                } else {
+                    run_skim(&list, SkimOptions::default().query(query).ansi(true));
+                }
             }
-        }
-        None => run_skim(&list, SkimOptions::default().ansi(true)),
-    };
+            None => run_skim(&list, SkimOptions::default().ansi(true)),
+        };
+    }
 }

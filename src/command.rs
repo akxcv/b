@@ -1,5 +1,6 @@
 use std::process::{Command, Stdio};
 
+#[derive(Debug)]
 struct CommandData {
     raw_pieces: Vec<String>,
     pub env: Vec<(String, String)>,
@@ -9,6 +10,7 @@ struct CommandData {
 
 impl From<String> for CommandData {
     fn from(s: String) -> Self {
+        let s = cmd_expand_env(s);
         let pieces: Vec<&str> = s.split(' ').collect();
         if let Some(cmd_index) = get_cmd_index(&pieces) {
             Self {
@@ -42,28 +44,31 @@ impl From<String> for CommandData {
 
 impl CommandData {
     pub fn to_command(&self) -> Command {
-        let mut command = shell::cmd!(&self.cmd).command;
+        let cmd_string = format!("{} {}", self.cmd, self.args.join(" "));
+        let mut command = shell::cmd!(&cmd_string).command;
 
         self.env.iter().for_each(|(k, v)| {
             command.env(k, v);
         });
-
-        command.args(&self.args);
 
         command.stdin(Stdio::inherit()).stdout(Stdio::inherit());
         let cmd = command;
         cmd
     }
 
-    // NOTE: expanding env vars via google/rust-shell. Using a dirty hack to piece it together
-    // from a `Command`'s Debug impl
     pub fn to_string(&self) -> String {
-        let cmd_string = self.raw_pieces.join(" ");
-        let c = shell::cmd!(&cmd_string).command;
-        let x = format!("{:?}", c);
-        let x = x.split("\" \"").collect::<Vec<&str>>().join(" ");
-        format!("{}", x[1..x.len() - 1].to_string())
+        self.raw_pieces.join(" ")
     }
+}
+
+// NOTE: expanding env vars via google/rust-shell. Using a dirty hack to piece it together
+// from a `Command`'s Debug impl
+fn cmd_expand_env(str: String) -> String {
+    let cmd_string = str.split(' ').collect::<Vec<&str>>().join(" ");
+    let c = shell::cmd!(&cmd_string).command;
+    let x = format!("{:?}", c);
+    let x = x.split("\" \"").collect::<Vec<&str>>().join(" ");
+    format!("{}", x[1..x.len() - 1].to_string())
 }
 
 fn get_cmd_index(pieces: &Vec<&str>) -> Option<usize> {

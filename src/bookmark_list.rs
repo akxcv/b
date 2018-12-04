@@ -5,10 +5,10 @@ use std::collections::BTreeMap;
 pub struct BookmarkList(pub BTreeMap<String, String>);
 
 impl BookmarkList {
-    pub fn to_skim_input(&self) -> String {
+    pub fn to_string(&self) -> String {
         self.0
             .iter()
-            .map(|(key, value)| format!("{} \x1B[38;5;249m({})\x1B[0m", key, value))
+            .map(|(key, value)| format!("\x1B[1m{}\x1B[0m \x1B[38;5;249m{}\x1B[0m", key, value))
             .collect::<Vec<String>>()
             .join("\n")
     }
