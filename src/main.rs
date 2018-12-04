@@ -1,14 +1,14 @@
+mod bookmark_list;
+mod command;
+
+use crate::bookmark_list::BookmarkList;
 use skim::{Skim, SkimOptions};
-use std::collections::BTreeMap;
 use std::default::Default;
 use std::fs::OpenOptions;
 use std::io::{Cursor, Read};
 use std::path::Path;
-use std::process::{Command, Stdio};
 
-fn main() {
-    let options: SkimOptions = SkimOptions::default().ansi(true);
-
+fn read_config_file() -> String {
     let home_dir = dirs::home_dir().unwrap();
     let path = Path::new(&home_dir).join(".b");
     let mut file = OpenOptions::new()
@@ -20,77 +20,23 @@ fn main() {
 
     let mut input = String::new();
     file.read_to_string(&mut input).unwrap();
+    input
+}
 
-    let map: BTreeMap<String, String> = serde_yaml::from_str(&input).unwrap();
-    let skim_input = map
-        .iter()
-        .map(|(key, value)| format!("{} \x1B[38;5;249m({})\x1B[0m", key, value))
-        .collect::<Vec<String>>()
-        .join("\n");
+fn main() {
+    let input = read_config_file();
+    let list: BookmarkList = serde_yaml::from_str(&input).unwrap();
+    let skim_input = list.to_skim_input();
 
+    let options: SkimOptions = SkimOptions::default().ansi(true);
     let selected_items = Skim::run_with(&options, Some(Box::new(Cursor::new(skim_input))))
         .map(|out| out.selected_items)
         .unwrap_or_else(|| Vec::new());
+    // TODO quit unless any items are present
 
     let item = &selected_items[0];
     let index = item.get_index();
-    let cmd = &map.values().cloned().collect::<Vec<String>>()[index];
+    let cmd = list.command_at(index);
 
-    let cmd_args = &cmd.split(' ').collect::<Vec<&str>>();
-    let first_non_env_var_idx = fnev(cmd_args);
-
-    if let Some(x) = first_non_env_var_idx {
-        let out = Command::new("command")
-            .args(&["-v", cmd_args[x]])
-            .output()
-            .unwrap();
-        let out_str = String::from_utf8_lossy(&out.stdout);
-
-        if out_str.len() > 0 {
-            let cmd_string = cmd_args[x..]
-                .iter()
-                .map(|x| String::from(*x))
-                .collect::<Vec<String>>()
-                .join(" ");
-            let mut c = shell::cmd!(&cmd_string).command;
-            // let mut c = Command::new(cmd_args[x]);
-            &cmd_args[0..x].iter().for_each(|v| {
-                let s = v.split('=').collect::<Vec<&str>>();
-                c.env(s[0], s[1]);
-            });
-
-            c //.args(&cmd_args[x+1..])
-                .stdin(Stdio::inherit())
-                .stdout(Stdio::inherit());
-            let mut c = c.spawn().unwrap();
-            c.wait().unwrap();
-        } else {
-            let cmd_string = cmd_args
-                .iter()
-                .map(|x| String::from(*x))
-                .collect::<Vec<String>>()
-                .join(" ");
-            let c = shell::cmd!(&cmd_string).command;
-            let x = format!("{:?}", c);
-            let x = x.split("\" \"").collect::<Vec<&str>>().join(" ");
-            println!("{}", x[1..x.len() - 1].to_string());
-        }
-    } else {
-        let cmd_string = cmd_args
-            .iter()
-            .map(|x| String::from(*x))
-            .collect::<Vec<String>>()
-            .join(" ");
-        let c = shell::cmd!(&cmd_string).command;
-        let x = format!("{:?}", c);
-        let x = x.split("\" \"").collect::<Vec<&str>>().join(" ");
-        println!("{}", x[1..x.len() - 1].to_string());
-    }
-}
-
-fn fnev(args: &Vec<&str>) -> Option<usize> {
-    args.iter()
-        .enumerate()
-        .find(|(_i, arg)| arg.split('=').collect::<Vec<&str>>().len() != 2)
-        .map(|(i, _arg)| i)
+    command::run_command(cmd);
 }

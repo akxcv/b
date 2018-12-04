@@ -47,6 +47,7 @@ version = "0.1.0"
 dependencies = [
  "dirs 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.80 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_derive 1.0.80 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_yaml 0.8.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "shell 0.1.0 (git+https://github.com/google/rust-shell)",
  "skim 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -363,6 +364,16 @@ version = "1.0.80"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "serde_derive"
+version = "1.0.80"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "proc-macro2 0.4.24 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 0.6.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 0.15.22 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "serde_yaml"
 version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -579,6 +590,7 @@ dependencies = [
 "checksum rustc-demangle 0.1.9 (registry+https://github.com/rust-lang/crates.io-index)" = "bcfe5b13211b4d78e5c2cadfebd7769197d95c639c35a50057eb4c05de811395"
 "checksum scoped_threadpool 0.1.9 (registry+https://github.com/rust-lang/crates.io-index)" = "1d51f5df5af43ab3f1360b429fa5e0152ac5ce8c0bd6485cae490332e96846a8"
 "checksum serde 1.0.80 (registry+https://github.com/rust-lang/crates.io-index)" = "15c141fc7027dd265a47c090bf864cf62b42c4d228bbcf4e51a0c9e2b0d3f7ef"
+"checksum serde_derive 1.0.80 (registry+https://github.com/rust-lang/crates.io-index)" = "225de307c6302bec3898c51ca302fc94a7a1697ef0845fcee6448f33c032249c"
 "checksum serde_yaml 0.8.8 (registry+https://github.com/rust-lang/crates.io-index)" = "0887a8e097a69559b56aa2526bf7aff7c3048cf627dff781f0b56a6001534593"
 "checksum shell 0.1.0 (git+https://github.com/google/rust-shell)" = "<none>"
 "checksum shlex 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "7fdf1b9db47230893d76faad238fd6097fd6d6a9245cd7a4d90dbd639536bbd2"

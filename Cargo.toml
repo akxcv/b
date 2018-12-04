@@ -8,5 +8,6 @@ edition = "2018"
 dirs = "1.0"
 skim = "0.5.2"
 serde = "*"
+serde_derive = "*"
 serde_yaml = "*"
 shell = { git = "https://github.com/google/rust-shell" }
