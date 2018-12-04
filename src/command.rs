@@ -83,8 +83,8 @@ fn is_runnable_command(command: &str) -> bool {
     out_str.len() > 0
 }
 
-pub fn run_command(cmd: String) {
-    let data = CommandData::from(cmd);
+pub fn run_command<T: AsRef<str>>(cmd: T) {
+    let data = CommandData::from(cmd.as_ref().to_owned());
 
     if is_runnable_command(&data.cmd) {
         data.to_command().spawn().unwrap().wait().unwrap();

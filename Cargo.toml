@@ -5,6 +5,7 @@ authors = ["Alexander Komarov <ak@akxcv.com>"]
 edition = "2018"
 
 [dependencies]
+clap = "*"
 dirs = "1.0"
 skim = "0.5.2"
 serde = "*"

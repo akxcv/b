@@ -17,4 +17,12 @@ impl BookmarkList {
     pub fn command_at(&self, index: usize) -> String {
         self.0.values().cloned().collect::<Vec<String>>()[index].clone()
     }
+
+    pub fn has_item<T: AsRef<str>>(&self, name: T) -> bool {
+        self.0.contains_key(name.as_ref())
+    }
+
+    pub fn get_item<T: AsRef<str>>(&self, name: T) -> &String {
+        self.0.get(name.as_ref()).unwrap()
+    }
 }
