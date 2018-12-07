@@ -13,7 +13,6 @@ impl BookmarkList {
             .join("\n")
     }
 
-    // TODO: think about reducing cloning; also raw index access is bad
     pub fn command_at(&self, index: usize) -> String {
         self.0.values().cloned().collect::<Vec<String>>()[index].clone()
     }

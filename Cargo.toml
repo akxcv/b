@@ -5,10 +5,10 @@ authors = ["Alexander Komarov <ak@akxcv.com>"]
 edition = "2018"
 
 [dependencies]
-clap = "*"
+clap = "2.32.0"
 dirs = "1.0"
 skim = "0.5.2"
-serde = "*"
-serde_derive = "*"
-serde_yaml = "*"
-shell = { git = "https://github.com/google/rust-shell" }
+serde = "1.0"
+serde_derive = "1.0"
+serde_yaml = "0.8"
+regex = "1"

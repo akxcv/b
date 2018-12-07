@@ -1,3 +1,5 @@
+use regex::Regex;
+use std::env;
 use std::process::{Command, Stdio};
 
 #[derive(Debug)]
@@ -43,17 +45,22 @@ impl From<String> for CommandData {
 }
 
 impl CommandData {
-    pub fn to_command(&self) -> Command {
-        let cmd_string = format!("{} {}", self.cmd, self.args.join(" "));
-        let mut command = shell::cmd!(&cmd_string).command;
+    pub fn run(&self) {
+        let mut command = Command::new("sh");
+        command.arg("-c");
+        command.arg(&format!("{} {}", self.cmd, self.args.join(" ")));
 
-        self.env.iter().for_each(|(k, v)| {
+        for (k, v) in &self.env {
             command.env(k, v);
-        });
+        }
 
-        command.stdin(Stdio::inherit()).stdout(Stdio::inherit());
-        let cmd = command;
-        cmd
+        command
+            .stdin(Stdio::inherit())
+            .stdout(Stdio::inherit())
+            .spawn()
+            .unwrap()
+            .wait()
+            .unwrap();
     }
 
     pub fn to_string(&self) -> String {
@@ -61,14 +68,13 @@ impl CommandData {
     }
 }
 
-// NOTE: expanding env vars via google/rust-shell. Using a dirty hack to piece it together
-// from a `Command`'s Debug impl
 fn cmd_expand_env(str: String) -> String {
-    let cmd_string = str.split(' ').collect::<Vec<&str>>().join(" ");
-    let c = shell::cmd!(&cmd_string).command;
-    let x = format!("{:?}", c);
-    let x = x.split("\" \"").collect::<Vec<&str>>().join(" ");
-    format!("{}", x[1..x.len() - 1].to_string())
+    let re = Regex::new(r"\$([A-Z]+)").unwrap();
+    re.replace_all(&str, |cap: &regex::Captures| {
+        let var_name = &cap[1];
+        env::var(var_name).unwrap_or(String::new())
+    })
+    .into_owned()
 }
 
 fn get_cmd_index(pieces: &Vec<&str>) -> Option<usize> {
@@ -92,7 +98,7 @@ pub fn run_command<T: AsRef<str>>(cmd: T) {
     let data = CommandData::from(cmd.as_ref().to_owned());
 
     if is_runnable_command(&data.cmd) {
-        data.to_command().spawn().unwrap().wait().unwrap();
+        data.run();
     } else {
         println!("{}", data.to_string());
     }
